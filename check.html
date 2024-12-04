@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Student Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        #loader {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Check Student Eligibility Criteria</h1>
+
+        <label for="phone">Enter Phone Number:</label>
+        <input type="text" id="phone" name="phone">
+
+        <button onclick="fetchStudentDetails()">Get Details</button>
+
+        <div class="message" id="message"></div>
+
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStudentDetails() {
+    const phone = document.getElementById('phone').value;
+    const messageDiv = document.getElementById('message');
+    const loader = document.getElementById('loader');
+
+    messageDiv.textContent = '';
+    messageDiv.classList.remove('error', 'success');
+
+    if (!phone) {
+        messageDiv.textContent = 'Please enter a phone number.';
+        messageDiv.classList.add('error');
+        return;
+    }
+
+    loader.style.display = 'block';
+
+    try {
+        // Login request
+        const loginResponse = await fetch('http://localhost:5000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mobilenumber: phone }),
+        });
+        const loginResult = await loginResponse.json();
+
+        if (!loginResult.success) {
+            loader.style.display = 'none';
+            messageDiv.textContent = 'Login failed: ' + loginResult.error;
+            messageDiv.classList.add('error');
+            return;
+        }
+
+        const token = loginResult.token;
+
+        // Fetch student details
+        const dataResponse = await fetch('http://localhost:5000/data32', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // Include only if backend requires it
+            },
+            body: JSON.stringify({ method: 32 }),
+        });
+        const dataResult = await dataResponse.json();
+
+        loader.style.display = 'none';
+
+        if (!dataResult.success) {
+            messageDiv.textContent = 'Error fetching data: ' + dataResult.error;
+            messageDiv.classList.add('error');
+            return;
+        }
+
+        // Assuming dataResult contains student directly
+        const student = dataResult.data; // Adjust according to your API response
+        if (student.phone !== phone) {
+            messageDiv.textContent = 'No student found with the provided phone number.';
+            messageDiv.classList.add('error');
+        } else {
+            messageDiv.textContent = 'Student found!';
+            messageDiv.classList.remove('error');
+            messageDiv.classList.add('success');
+
+            // Redirect
+            const fullName = `${student.firstname}`;
+            const redirectUrl = `signup.html?fullname=${encodeURIComponent(fullName)}&phone=${encodeURIComponent(student.phone)}&hallticketno=${encodeURIComponent(student.hallticketno)}`;
+            window.location.href = redirectUrl;
+
+            
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        loader.style.display = 'none';
+        messageDiv.textContent = 'Error fetching student details.';
+        messageDiv.classList.add('error');
+    }
+}
+
+    </script>
+
+</body>
+</html>

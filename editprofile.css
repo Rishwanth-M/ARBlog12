@@ -1,0 +1,120 @@
+/* Global Styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background: url('https://www.shutterstock.com/image-illustration/3d-rendering-black-abstract-geometric-600nw-2421483579.jpg') no-repeat center center fixed;
+    background-size: cover; /* Ensures the image covers the entire background */
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #c7cfd7;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #555;
+  }
+  
+  input[type="text"], textarea, input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    width: 100%;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  button[type="submit"] {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: center;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Crop Modal Styles */
+  #cropModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: auto;
+    height:auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #cropModal .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  #cropImage {
+    max-width: 100%;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+  
+    h1 {
+      font-size: 2rem;
+    }
+  
+    input, textarea, button {
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.6rem;
+    }
+  
+    input, textarea, button {
+      font-size: 0.8rem;
+      padding: 6px;
+    }
+  
+    .container {
+      padding: 15px;
+    }
+  }

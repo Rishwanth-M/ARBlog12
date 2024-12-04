@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile & Attendance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .title {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .input-container {
+      margin-bottom: 20px;
+    }
+    .input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .button {
+      display: block;
+      width: 100%;
+      max-width: 200px;
+      padding: 10px;
+      margin: 10px auto;
+      font-size: 16px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button:disabled {
+      background-color: #ccc;
+    }
+    .error {
+      color: red;
+      text-align: center;
+    }
+    .success {
+      color: green;
+      text-align: center;
+    }
+    .student-profile, .attendance-data, .attendance-chart-container {
+      margin-top: 20px;
+    }
+    img.profile-picture {
+      display: block;
+      margin: 0 auto;
+      max-width: 150px;
+      border-radius: 50%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    canvas {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2 class="title">Student Profile & Attendance</h2>
+
+    <div class="input-container">
+      <input type="text" id="mobileNumber" class="input" placeholder="Enter your mobile number">
+      <button id="fetchButton" class="button">Fetch Details</button>
+      <div id="messages"></div>
+    </div>
+
+    <div class="student-profile" id="studentProfile" style="display: none;">
+      <img id="profilePicture" class="profile-picture" src="" alt="Profile Picture">
+      <p><strong>Name:</strong> <span id="studentName"></span></p>
+      <p><strong>Roll Number:</strong> <span id="studentRoll"></span></p>
+      <p><strong>Section:</strong> <span id="studentSection"></span></p>
+      <p><strong>Department:</strong> <span id="studentDept"></span></p>
+      <p><strong>Year of Admission:</strong> <span id="studentYear"></span></p>
+      <p><strong>Current Year:</strong> <span id="studentCurrentYear"></span></p>
+      <p><strong>Hall Ticket Number:</strong> <span id="studentHallTicket"></span></p>
+    </div>
+
+    <div class="attendance-data" id="attendanceData" style="display: none;">
+      <h3>Attendance Data</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Sessions</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable"></tbody>
+      </table>
+    </div>
+
+    <div class="attendance-chart-container" id="attendanceChartContainer" style="display: none;">
+      <h3>Attendance Chart</h3>
+      <canvas id="attendanceChart"></canvas>
+      <p id="totalPercentage"></p>
+    </div>
+  </div>
+
+  <script>
+    const fetchButton = document.getElementById('fetchButton');
+    const messages = document.getElementById('messages');
+    const studentProfile = document.getElementById('studentProfile');
+    const attendanceData = document.getElementById('attendanceData');
+    const attendanceChartContainer = document.getElementById('attendanceChartContainer');
+
+    fetchButton.addEventListener('click', async () => {
+      const mobileNumber = document.getElementById('mobileNumber').value;
+      if (!/^\d{10}$/.test(mobileNumber)) {
+        showMessage('Please enter a valid 10-digit mobile number.', 'error');
+        return;
+      }
+
+      clearUI();
+      showMessage('Fetching details...', 'success');
+      fetchButton.disabled = true;
+
+      try {
+        // Fetch Profile Data (Method 32)
+        const profileResponse = await axios.post('http://localhost:5000/data32', { mobilenumber: mobileNumber });
+        const profile = profileResponse.data?.data;
+
+        if (profile) {
+          document.getElementById('profilePicture').src = profile.picture || 'placeholder.jpg';
+          document.getElementById('studentName').textContent = profile.firstname || 'N/A';
+          document.getElementById('studentRoll').textContent = profile.rollno || 'N/A';
+          document.getElementById('studentSection').textContent = profile.section || 'N/A';
+          document.getElementById('studentDept').textContent = profile.dept || 'N/A';
+          document.getElementById('studentYear').textContent = profile.yearofadmision || 'N/A';
+          document.getElementById('studentCurrentYear').textContent = profile.currentyear || 'N/A';
+          document.getElementById('studentHallTicket').textContent = profile.hallticketno || 'N/A';
+          studentProfile.style.display = 'block';
+        } else {
+          throw new Error('Profile not found.');
+        }
+
+        // Fetch Attendance Data (Method 314)
+        const attendanceResponse = await axios.post('http://localhost:5000/data314', { mobilenumber: mobileNumber });
+        const attendance = attendanceResponse.data?.data;
+
+        if (attendance) {
+          renderAttendanceTable(attendance.attandance.dayobjects);
+          renderAttendanceChart(attendance.overallattperformance?.totalpercentage || 0);
+          attendanceData.style.display = 'block';
+          attendanceChartContainer.style.display = 'block';
+        } else {
+          throw new Error('Attendance data not found.');
+        }
+
+        showMessage('Details fetched successfully!', 'success');
+      } catch (error) {
+        console.error(error);
+        showMessage('Failed to fetch details. Please try again.', 'error');
+      } finally {
+        fetchButton.disabled = false;
+      }
+    });
+
+    function showMessage(message, type) {
+      messages.textContent = message;
+      messages.className = type;
+    }
+
+    function clearUI() {
+      messages.textContent = '';
+      studentProfile.style.display = 'none';
+      attendanceData.style.display = 'none';
+      attendanceChartContainer.style.display = 'none';
+    }
+
+    function renderAttendanceTable(dayObjects) {
+      const tableBody = document.getElementById('attendanceTable');
+      tableBody.innerHTML = '';
+
+      dayObjects.forEach(day => {
+        const row = document.createElement('tr');
+        const dateCell = document.createElement('td');
+        const sessionsCell = document.createElement('td');
+        dateCell.textContent = day.date;
+        sessionsCell.textContent = formatSessions(day.sessions);
+        row.appendChild(dateCell);
+        row.appendChild(sessionsCell);
+        tableBody.appendChild(row);
+      });
+    }
+
+    function renderAttendanceChart(percentage) {
+      const ctx = document.getElementById('attendanceChart').getContext('2d');
+      const chartData = {
+        labels: ['Present', 'Absent'],
+        datasets: [{
+          data: [percentage, 100 - percentage],
+          backgroundColor: ['#4caf50', '#f44336']
+        }]
+      };
+
+      new Chart(ctx, { type: 'pie', data: chartData });
+      document.getElementById('totalPercentage').textContent = `Total Attendance: ${percentage}%`;
+    }
+
+    function formatSessions(sessions) {
+      const labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'];
+      return labels.map((label, index) => sessions[`session${index + 1}`] === '1' ? '✅' : '❌').join(' ');
+    }
+  </script>
+</body>
+</html>

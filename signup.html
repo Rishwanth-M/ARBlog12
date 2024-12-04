@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="logincss.css">
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+        import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+        window.onload = function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    let fullname = urlParams.get('fullname');
+    const phone = urlParams.get('phone');
+    const hallticketno = urlParams.get('hallticketno'); // Get hall ticket number
+
+    console.log("URL Parameters - Full Name:", fullname);
+    console.log("URL Parameters - Phone:", phone);
+    console.log("URL Parameters - Hall Ticket:", hallticketno);
+
+    if (fullname && phone && hallticketno) {
+        // Decode and clean Full Name
+        fullname = decodeURIComponent(fullname)
+            .replace(/\b(KMIT|Kmit123\$|Kmit123%24)\b/g, '') // Remove unwanted placeholders
+            .trim();
+        console.log("Cleaned Full Name:", fullname); // Log cleaned name
+
+        // Set the values for fullname, phone, and hall ticket number
+        document.getElementById('signup-fullname').value = fullname;
+        document.getElementById('signup-phone').value = phone;
+        document.getElementById('signup-username').value = hallticketno;
+
+        // Make username read-only
+        document.getElementById('signup-username').readOnly = true;
+    }
+};
+
+
+window.signup = async function signup() {
+    const signupButton = document.getElementById("signup-button");
+    const email = document.getElementById('signup-email').value.trim();
+    let fullname = document.getElementById('signup-fullname').value.trim();
+    const username = document.getElementById('signup-username').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const phone = document.getElementById('signup-phone').value.trim();
+
+    fullname = fullname.replace(/\b(KMIT|Kmit123\$|Kmit123%24)\b/g, '').trim();
+
+    // Validate inputs
+    if (!validateEmail(email)) {
+        alert("Please enter a valid email.");
+        return;
+    }
+    if (username.length < 3) {
+        alert("Username must be at least 3 characters.");
+        return;
+    }
+    if (fullname.length < 1) {
+        alert("Full name cannot be empty.");
+        return;
+    }
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+    }
+
+    try {
+    signupButton.disabled = true;
+    signupButton.innerText = "Signing Up...";
+
+    // Create a new user with email and password
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Send email verification
+    await sendEmailVerification(user); // Use the standalone function here
+
+    // Store user information in Firestore
+    await setDoc(doc(db, 'users', user.uid), {
+        email,
+        fullname,
+        username,
+        phone,
+        isProfileComplete: false
+    });
+
+    alert("Sign up successful! A verification email has been sent to your email address. Please verify before logging in.");
+
+    // Redirect to login page after signup
+    window.location.href = "login.html";
+} catch (error) {
+    handleSignupError(error);
+} finally {
+    signupButton.disabled = false;
+    signupButton.innerText = "Sign Up";
+}
+
+};
+
+
+// Helper functions for validations and error handling
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function handleSignupError(error) {
+    if (error.code === 'auth/email-already-in-use') {
+        alert("User already exists. Please log in instead.");
+        window.location.href = "login.html";
+    } else if (error.code === 'auth/weak-password') {
+        alert("Password is too weak. Please choose a password with at least 6 characters.");
+    } else {
+        console.error("Error signing up: ", error);
+        alert("Sign up failed! Please try again later.");
+    }
+}
+
+</script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="form-wrapper">
+            <form class="form-container" onsubmit="event.preventDefault(); signup();">
+                <h2>Sign Up</h2>
+                <input type="text" id="signup-email" placeholder="Email" required>
+                <input type="text" id="signup-fullname" placeholder="Full Name" required>
+                <input type="text" id="signup-username" placeholder="Username" disabled required minlength="3">
+                <input type="password" id="signup-password" placeholder="Password (6+ characters)" required minlength="6">
+                <input type="text" id="signup-phone" placeholder="Phone Number" disabled required>
+                <button type="submit" id="signup-button">Sign Up</button>
+                <div class="toggle-form">
+                    <p>Already have an account? <a href="login.html">Log in</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

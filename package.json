@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "node-fetch": "^3.3.2"
+  },
+  "name": "arblog-main",
+  "version": "1.0.0",
+  "description": "A Responsive Social Media Website With Theme Customization Using HTML CSS &amp; JavaScript",
+  "main": "attendance.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

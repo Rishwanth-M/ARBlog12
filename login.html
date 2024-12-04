@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="logincss.css">
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+        // Login function
+        window.login = async function login() {
+            const loginButton = document.querySelector('button[type="submit"]');
+            loginButton.disabled = true; // Disable button while processing
+            loginButton.textContent = "Logging in..."; // Change button text
+
+            try {
+                // Sign out any existing user
+                await signOut(auth);
+
+                const email = document.getElementById('signin-email').value.trim();
+                const password = document.getElementById('signin-password').value;
+
+                // Sign in with new credentials
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Check if the user's email is verified
+                if (!user.emailVerified) {
+                    alert("Your email is not verified. Please verify your email before logging in.");
+                    await signOut(auth); // Sign out the user to prevent further access
+                    return;
+                }
+
+                alert("Login successful!");
+                window.location.href = "editprofile.html";
+            } catch (error) {
+                console.error("Error logging in: ", error);
+                let message = "Login failed.";
+                if (error.code === 'auth/user-not-found') {
+                    message = "No account found with this email.";
+                } else if (error.code === 'auth/wrong-password') {
+                    message = "Incorrect password.";
+                } else if (error.code === 'auth/invalid-email') {
+                    message = "Invalid email format.";
+                } else if (error.code === 'auth/too-many-requests') {
+                    message = "Too many login attempts. Please try again later.";
+                }
+                alert(message);
+            } finally {
+                loginButton.disabled = false; // Enable button
+                loginButton.textContent = "Log In"; // Reset button text
+            }
+        };
+
+        // Reset Password function
+        window.resetPassword = async function resetPassword() {
+            const email = document.getElementById('signin-email').value.trim();
+            
+            if (!email) {
+                alert("Please enter your email to reset your password.");
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Password reset email sent! Check your inbox.");
+            } catch (error) {
+                console.error("Error sending reset email: ", error);
+                alert("Failed to send password reset email: " + error.message);
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-wrapper">
+            <form class="form-container" onsubmit="event.preventDefault(); login();">
+                <h2>Log In</h2>
+                <input type="text" id="signin-email" placeholder="Email" aria-label="Email" required>
+                <input type="password" id="signin-password" placeholder="Password" aria-label="Password" required>
+                <button type="submit">Log In</button>
+                <div class="toggle-form">
+                    <p><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
+                    <p>Don't have an account? <a href="check.html">Sign up</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

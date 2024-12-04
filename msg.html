@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mySocial - Responsive Social Media Website Using HTML, CSS, & JavaScript</title>
+    <!-- IconScout CDN -->
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="home.js" defer></script>
+    
+</head>
+<style>
+    /* Keyframes for heart animation */
+@keyframes heartBeat {
+    0%, 100% {
+        transform: scale(1);
+        color: var(--color-black); /* Default color */
+    }
+    50% {
+        transform: scale(1.2);
+        color: var(--color-red); /* Color when animated */
+    }
+}
+
+/* Apply the animation to the liked state */
+.like-button.liked i {
+    animation: heartBeat 0.5s ease forwards;
+}
+
+/* Profile Options Container */
+/* Profile Options Dropdown */
+#profileOptions {
+    display: none; /* Initially hidden */
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 10;
+    width: 250px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px;
+}
+
+/* Profile Link inside Dropdown */
+#profileOptions .profile {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between image and text */
+    padding: 10px 0;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+/* Profile Photo */
+#profileOptions .profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#profileOptions .profile-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Handle Styling */
+#profileOptions .handle h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+#profileOptions .handle .text-muted {
+    margin: 0;
+    font-size: 14px;
+    color: #888;
+}
+
+/* Other Links in Profile Options */
+#profileOptions a:not(.profile) {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+    text-align: left;
+}
+
+#profileOptions a:not(.profile):hover {
+    background-color: #f0f0f0;
+}
+
+.selected-user-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
+.delete-btn:hover {
+    background-color: #d73838;
+}
+
+
+
+        /* Other styles */
+        .suggestion-item {
+            padding: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            margin: 2px 0;
+        }
+
+        .selected-user-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            cursor: pointer; /* Cursor to indicate it's clickable */
+            background-color: #888f8f;
+        }
+
+        .profile-photo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; /* Circular profile pictures */
+            margin-right: 10px;
+        }
+
+        .message-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Popup chat interface styling */
+#chat-interface {
+    display: none; /* Hidden by default */
+    position: fixed; /* Fixed position to overlay */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Offset for perfect centering */
+    background-color: white; /* Background color */
+    border: 1px solid #ccc; /* Border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    width: 100%; /* Width of the chat box */
+    max-width: 90%; /* Responsive width */
+    z-index: 1000; /* Ensure it's above other elements */
+    overflow: hidden; /* Hide overflow */
+    padding: 20px; /* Padding around the content */
+}
+
+
+/* Close button styling */
+#close-chat {
+    position: absolute;
+        top: 50%;
+        right: 10px; /* Adjust spacing from the right edge */
+        transform: translateY(-50%);
+        background-color: #ff4d4d; 
+        color: white; 
+        border: none; 
+        border-radius: 5px; 
+        cursor: pointer; 
+        padding: 8px 12px;
+        font-size: 16px;
+        transition: background-color 0.3s;
+}
+
+#close-chat:hover {
+    background-color: #ff1a1a; /* Darker shade on hover */
+}
+
+/* Chat header styling */
+#chat-header {
+    display: flex;
+    justify-content: flex-start; /* Align items to the left */
+    align-items: center;
+    gap: 10px; /* Space between close button and username */
+}
+
+
+/* Container styling */
+#messages-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sent messages - aligned to the right */
+.sent-message {
+    align-self: flex-end; /* Align to the right */
+    background-color: #0084ff; /* Blue background for sent messages */
+    color: white; /* White text color */
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 15px 15px 0 15px; /* Rounded corners on the left */
+    max-width: 80%; /* Limit width */
+    word-wrap: break-word; /* Allow text to wrap */
+}
+
+/* Received messages - aligned to the left */
+.received-message {
+    align-self: flex-start; /* Align to the left */
+    background-color: #e5e5ea; /* Light gray background for received messages */
+    color: black; /* Black text color */
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 15px 15px 15px 0; /* Rounded corners on the right */
+    max-width: 80%; /* Limit width */
+    word-wrap: break-word; /* Allow text to wrap */
+}
+
+
+/* Style for the message input field */
+#message-input {
+    flex: 1;                   /* Allow input to grow and take available space */
+    padding: 10px;            /* Add padding for better usability */
+    border: 1px solid #ccc;   /* Light gray border */
+    border-radius: 4px;       /* Rounded corners */
+    font-size: 16px;          /* Increase font size */
+    transition: border-color 0.3s; /* Smooth border color transition */
+    width: 60%;
+}
+
+/* Change border color on focus */
+#message-input:focus {
+    border-color: #007BFF;    /* Change border color to blue on focus */
+    outline: none;             /* Remove default outline */
+}
+
+/* Style for the send button */
+#send-message {
+    background-color: #007BFF; /* Bootstrap primary color */
+    color: white;              /* White text color */
+    border: none;              /* No border */
+    border-radius: 4px;       /* Rounded corners */
+    padding: 10px 15px;       /* Padding for button */
+    font-size: 16px;          /* Match font size with input */
+    margin-left: 10px;        /* Space between input and button */
+    cursor: pointer;           /* Change cursor to pointer on hover */
+    transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+/* Change button background color on hover */
+#send-message:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Media query to adjust the chat interface for larger screens */
+@media (min-width: 768px) {
+        #chat-interface {
+            width: 500px; /* Increased width for larger screens */
+            padding: 20px; /* More padding for spacious layout */
+        }
+        
+        #messages-container {
+            height: 400px; /* Increased height */
+        }
+
+        #chat-username {
+            font-size: 1.5em; /* Larger font size for username */
+        }
+
+        #close-chat {
+            font-size: 18px; /* Slightly larger close button */
+        }
+    }
+
+    
+    .message-count-badge {
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    
+    margin-left: 10px;
+    text-align: center;
+}
+
+
+</style>
+<body>
+    <nav>
+        <div class="container" style="max-width: 800px; margin: 0 auto; padding: 10px;">
+            <h2 class="logo" style="font-size: 1.5em;">𝘼𝙍 𝘽𝙡𝙤𝙜𝙜𝙞𝙣𝙜</h2>
+            <div class="create" style="display: flex; align-items: center; gap: 10px;">
+                <div class="profile-nav">
+                    <a href="home.html">Home</a>
+                </div>
+                <a href="create.html" class="btn btn-primary" style="padding: 5px 10px; font-weight: bold;">Create</a>
+                <div class="profile-photo" style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
+                    <img src="" alt="Profile Photo" id="profileImage" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div id="profileOptions" class="profile-options" style="display: none;">
+                    <a class="profile">
+                        <div class="profile-photo">
+                            <img src="" alt="Profile Photo" id="profileDropdownImage">
+                        </div>
+                        <div class="handle">
+                            <h4 id="profile-name"></h4>
+                            <p id="profile-handle" class="text-muted"></p>
+                        </div>
+                    </a>
+                    <a href="profile.html" id="myProfileOption">My Profile</a>
+                    <a href="login.html" id="loginOption">Login</a>
+                    <a href="signup.html" id="signupOption">Sign Up</a>
+                    <a href="#" id="logoutOption" style="display: none;">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="right" style="max-width: 800px; margin: 0 auto; padding: 10px;">
+        <div class="messages" style="background: #888f8f; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <div class="heading" style="margin-bottom: 10px;">
+                <h4 style="margin: 0;">Messages</h4>
+            </div>
+            <div class="search-bar" style="display: flex; gap: 5px; margin-bottom: 10px;border-radius: 0%;">
+                <i class="uil uil-search" style="align-self: center;"></i>
+                <input type="search" placeholder="Search messages" id="message-search" style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 5px;">
+                <div id="suggestionsContainer1" class="suggestions-container"></div>
+            </div>
+    
+            <div class="category" style="margin-bottom: 10px;">
+                <h3 class="active" style="margin: 0; font-size: 1.1em;">CHAT BOX</h3>
+            </div>
+    
+            <div id="selected-user" style="display: none; margin-bottom: 10px;">
+                <div class="profile-photo" style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%; margin-right: 10px;">
+                    <img id="selected-user-img" src="./images/profile-9.jpg" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="message-body">
+                    <h5 id="selected-user-name" style="margin: 0; font-size: 1em;">Username</h5>
+                </div>
+                <button id="delete-convo-btn" class="delete-btn" style="padding: 5px 10px; font-size: 0.9em;">Delete</button>
+                <div id="new-msg-notification" style="margin-left: 10px; font-size: 0.9em; color: green; display: none;">
+                    New message received!
+                </div>
+            </div>
+            
+    
+            <div id="selected-users" style="margin-bottom: 10px;"></div>
+    
+            <div id="chat-interface" style="
+                display: none;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #f4f4f9;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            ">
+                <div id="chat-header" style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    position: relative;
+                    background-color: #4a76a8;
+                    padding: 15px;
+                    border-radius: 10px 10px 0 0;
+                ">
+                    <h2 id="chat-username" style="
+                        font-family: 'Georgia', serif;
+                        color: white;
+                        font-weight: 600;
+                        font-size: 1.3em;
+                        text-align: center;
+                        margin: 0;
+                    ">Chat Username</h2>
+                    <button id="close-chat" style="
+                        position: absolute;
+                        top: 50%;
+                        right: 15px;
+                        transform: translateY(-50%);
+                        background-color: #ff4d4d;
+                        color: white;
+                        border: none;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        padding: 5px 8px;
+                        font-size: 16px;
+                        transition: background-color 0.3s;
+                        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+                    ">×</button>
+                </div>
+                <div id="messages-container" style="
+                    padding: 15px;
+                    height: 250px;
+                    overflow-y: auto;
+                    background-color: #ffffff;
+                ">
+                    <!-- Messages will appear here -->
+                </div>
+                <div style="
+                    display: flex;
+                    padding: 10px;
+                    border-top: 1px solid #ddd;
+                    background-color: #f4f4f9;
+                ">
+                    <input type="text" id="message-input" placeholder="Type your message..." style="
+                        flex: 1;
+                        padding: 8px;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        outline: none;
+                        font-size: 14px;
+                    ">
+                    <button id="send-message" style="
+                        margin-left: 10px;
+                        background-color: #4a76a8;
+                        color: white;
+                        padding: 8px 12px;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: background-color 0.3s;
+                    ">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+<script>
+    document.getElementById("profileImage").addEventListener("click", function() {
+        var options = document.getElementById("profileOptions");
+        if (options.style.display === "none" || options.style.display === "") {
+            options.style.display = "block";
+        } else {
+            options.style.display = "none";
+        }
+    });
+    
+    document.addEventListener("click", function(event) {
+        var options = document.getElementById("profileOptions");
+        var profileImage = document.getElementById("profileImage");
+        if (event.target !== options && event.target !== profileImage) {
+            options.style.display = "none";
+        }
+    });
+    
+
+</script>
+
+<script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, doc, getDoc, query, where, getDocs, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const auth = getAuth();
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById('message-search');
+        const suggestionsContainer = document.getElementById('suggestionsContainer1');
+        const selectedUsersContainer = document.getElementById('selected-users');
+        const chatInterface = document.getElementById('chat-interface');
+        const chatUsername = document.getElementById('chat-username');
+        const messagesContainer = document.getElementById('messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message');
+        const closeChatButton = document.getElementById('close-chat');
+        const displayedUsersSet = new Set(); // To track displayed users
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+                if (currentUsername) {
+                    await loadSelectedUsers(currentUsername);
+                }
+            } else {
+                console.log("User is not logged in.");
+            }
+        });
+
+        searchInput.addEventListener('input', async function () {
+            const queryText = this.value.trim();
+            if (queryText.length > 0) {
+                try {
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef, where('username', '>=', queryText), where('username', '<=', queryText + '\uf8ff'));
+                    const querySnapshot = await getDocs(q);
+
+                    suggestionsContainer.innerHTML = ''; // Clear suggestions
+                    suggestionsContainer.style.display = 'block';
+
+                    if (!querySnapshot.empty) {
+                        querySnapshot.forEach(doc => {
+                            const username = doc.data().username;
+                            const suggestionItem = document.createElement('div');
+                            suggestionItem.className = 'suggestion-item';
+                            suggestionItem.textContent = username;
+
+                            suggestionItem.addEventListener('click', async () => {
+                                await showSelectedUser(username);
+                                suggestionsContainer.style.display = 'none';
+                                searchInput.value = '';
+                            });
+
+                            suggestionsContainer.appendChild(suggestionItem);
+                        });
+                    } else {
+                        suggestionsContainer.innerHTML = '<p>No users found</p>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching user suggestions:', error);
+                }
+            } else {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        async function showSelectedUser(username) {
+    if (displayedUsersSet.has(username)) {
+        console.log("User already displayed:", username);
+        return;
+    }
+
+    try {
+        const usersRef = collection(db, 'users');
+        const userQuery = query(usersRef, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (!userSnapshot.empty) {
+            const userData = userSnapshot.docs[0].data();
+            const userContainer = document.createElement('div');
+            userContainer.className = 'selected-user-container';
+
+            const profilePhoto = document.createElement('div');
+            profilePhoto.className = 'profile-photo';
+            const img = document.createElement('img');
+            img.src = userData.profilePicUrl || './images/profile-9.jpg';
+            img.alt = "Profile Picture";
+            profilePhoto.appendChild(img);
+
+            const messageBody = document.createElement('div');
+            messageBody.className = 'message-body';
+            const name = document.createElement('h5');
+            name.textContent = userData.username || 'Unknown User';
+            messageBody.appendChild(name);
+
+            // Add delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete Chat';
+            deleteButton.className = 'delete-btn';
+            deleteButton.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                if (confirm("Would you like to delete this chat feed?")) {
+                    await deleteChat(username, userContainer);
+                }
+            });
+
+            // Add message count badge
+            const messageCountBadge = document.createElement('span');
+            messageCountBadge.className = 'message-count-badge';
+            messageCountBadge.textContent = ''; // Initially empty (no count yet)
+            messageBody.appendChild(messageCountBadge);
+
+            userContainer.appendChild(profilePhoto);
+            userContainer.appendChild(messageBody);
+            userContainer.appendChild(deleteButton);
+            selectedUsersContainer.appendChild(userContainer);
+
+            displayedUsersSet.add(username);
+
+            const currentUsername = await getCurrentUsername();
+            if (currentUsername) {
+                const chatId = [currentUsername, username].sort().join('_');
+                const chatDoc = await getDoc(doc(db, 'chats', chatId));
+                if (!chatDoc.exists()) {
+                    await createChat(chatId, [currentUsername, username]);
+                }
+
+                userContainer.addEventListener('click', () => {
+                    openChat(chatId, username);
+                    // Reset the count when the chat is opened
+                    messageCountBadge.textContent = '';  // Clear any existing count
+                    messageCountBadge.style.display = 'none';  // Hide the badge initially
+                });
+
+                // Monitor message count from the other user
+                monitorMessageCount(chatId, username, messageCountBadge, currentUsername);
+            }
+        } else {
+            console.log("No such user document!");
+        }
+    } catch (error) {
+        console.error("Error showing selected user:", error);
+    }
+}
+
+function monitorMessageCount(chatId, otherUsername, badgeElement, currentUsername) {
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+
+    onSnapshot(messagesRef, (snapshot) => {
+        // Initialize count as 0
+        let count = 0;
+
+        snapshot.forEach(doc => {
+            const messageData = doc.data();
+            // Increment count only for messages sent by the other user
+            if (messageData.sender === otherUsername && !messageData.isRead) {
+                count++;
+            }
+        });
+
+        // Only show the badge if there are new messages
+        if (count > 0) {
+            badgeElement.textContent = `${count} new message${count > 1 ? 's' : ''}`;
+            badgeElement.style.display = 'inline';  // Show the badge
+        } else {
+            badgeElement.style.display = 'none';  // Hide the badge if no new messages
+        }
+    });
+}
+
+
+        async function openChat(chatId, username) {
+            const chatDoc = await getDoc(doc(db, 'chats', chatId));
+            if (!chatDoc.exists()) {
+                alert("This conversation has been deleted.");
+                return;
+            }
+
+            chatUsername.textContent = username;
+            messagesContainer.innerHTML = '';
+            chatInterface.style.display = 'block';
+
+            await loadMessages(chatId);
+
+            sendMessageButton.onclick = async () => {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    await sendMessage(chatId, messageText);
+                    messageInput.value = '';
+                }
+            };
+
+            closeChatButton.onclick = () => {
+                chatInterface.style.display = 'none';
+            };
+        }
+
+        async function loadMessages(chatId) {
+            const messagesRef = collection(db, 'chats', chatId, 'messages');
+            const currentUsername = await getCurrentUsername();
+
+            onSnapshot(messagesRef, (snapshot) => {
+                messagesContainer.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const messageData = doc.data();
+                    displayMessage(messageData.text, messageData.sender === currentUsername);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        function displayMessage(messageText, isSent) {
+            const messageElement = document.createElement('div');
+            messageElement.className = isSent ? 'sent-message' : 'received-message';
+            messageElement.textContent = messageText;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendMessage(chatId, messageText) {
+            const messagesRef = collection(db, 'chats', chatId, 'messages');
+            const currentUsername = await getCurrentUsername();
+
+            await setDoc(doc(messagesRef, Date.now().toString()), {
+                text: messageText,
+                sender: currentUsername,
+                createdAt: new Date()
+            });
+        }
+
+        async function deleteChat(username, userContainer) {
+            const currentUsername = await getCurrentUsername();
+            if (!currentUsername) return;
+
+            const chatId = [currentUsername, username].sort().join('_');
+            const chatDocRef = doc(db, 'chats', chatId);
+            await deleteDoc(chatDocRef);
+
+            selectedUsersContainer.removeChild(userContainer);
+            displayedUsersSet.delete(username);
+        }
+
+        async function loadSelectedUsers(currentUsername) {
+            const chatsRef = collection(db, 'chats');
+            const q = query(chatsRef, where('users', 'array-contains', currentUsername));
+
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(doc => {
+                const chatData = doc.data();
+                const otherUsername = chatData.users.find(username => username !== currentUsername);
+                if (otherUsername) {
+                    showSelectedUser(otherUsername);
+                }
+            });
+        }
+
+        async function createChat(chatId, users) {
+            const chatsRef = collection(db, 'chats');
+            await setDoc(doc(chatsRef, chatId), {
+                users: users,
+                createdAt: new Date()
+            });
+        }
+
+        async function getCurrentUsername() {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return null;
+
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDoc = await getDoc(userDocRef);
+            return userDoc.exists() ? userDoc.data().username : null;
+        }
+    });
+
+
+// ------------------------------------------------ Profile dropdown Start ------------------------------------------------------ //
+
+// Profile dropdown toggle
+document.getElementById("profileImage").addEventListener("click", function() {
+    const options = document.getElementById("profileOptions");
+    options.style.display = (options.style.display === "none" || options.style.display === "") ? "block" : "none";
+});
+
+document.addEventListener("click", function(event) {
+    const options = document.getElementById("profileOptions");
+    const profileImage = document.getElementById("profileImage");
+    if (event.target !== options && event.target !== profileImage && !options.contains(event.target)) {
+        options.style.display = "none";
+    }
+});
+
+onAuthStateChanged(auth, async (user) => { 
+    if (user) {
+        // Fetch user data from Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const profilePicUrl = userData.profilePicUrl || './images/social logo.png'; // Ensure this path is valid
+
+            // Update profile information in the navbar
+            document.getElementById('profile-name').textContent = userData.fullname;
+            document.getElementById('profile-handle').textContent = `@${userData.username}`;
+            document.getElementById('profileImage').src = profilePicUrl;
+            document.getElementById('profileDropdownImage').src = profilePicUrl;
+
+        } else {
+            console.error("No such user document!");
+        }
+    } else {
+        document.getElementById('profileOptions').style.display = 'none';
+    }
+});
+
+// Function to update profile options based on login status
+function updateProfileOptions() {
+    const user = auth.currentUser; // Get the current logged-in user
+    const myProfileOption = document.getElementById('myProfileOption');
+    const loginOption = document.getElementById('loginOption');
+    const signupOption = document.getElementById('signupOption');
+    const logoutOption = document.getElementById('logoutOption');
+
+    if (user) {
+        // User is logged in
+        myProfileOption.style.display = 'block';
+        loginOption.style.display = 'none';
+        signupOption.style.display = 'none';
+        logoutOption.style.display = 'block';
+    } else {
+        // User is not logged in
+        myProfileOption.style.display = 'none';
+        loginOption.style.display = 'block';
+        signupOption.style.display = 'block';
+        logoutOption.style.display = 'none';
+    }
+}
+
+// Function to handle logout
+async function handleLogout() {
+    try {
+        await auth.signOut(); // Sign out the user
+        alert('You have successfully logged out.'); // Provide feedback
+        window.location.href = 'signup.html'; 
+    } catch (error) {
+        alert('Error signing out. Please try again.'); // Notify user on error
+        console.error('Error signing out:', error);
+    }
+}
+
+// Attach event listener to logout option
+const logoutOption = document.getElementById('logoutOption');
+if (logoutOption) {
+    logoutOption.addEventListener('click', handleLogout);
+}
+
+// Update profile options on page load and auth state change
+auth.onAuthStateChanged(updateProfileOptions);
+updateProfileOptions(); // Ensure it's also run on page load
+
+// ------------------------------------------------ Profile dropdown end ------------------------------------------------------ //
+
+</script>
+
+</body>
+</html>

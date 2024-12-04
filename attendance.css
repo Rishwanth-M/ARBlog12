@@ -1,0 +1,108 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: url('https://www.shutterstock.com/image-illustration/3d-rendering-black-abstract-geometric-600nw-2421483579.jpg') no-repeat center center fixed;
+    background-size: cover; /* Ensures the image covers the entire background */
+  }
+  
+  .container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .input-container {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .input {
+    padding: 10px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .button-container {
+    text-align: center;
+  }
+  
+  .button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .messages {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .messages .error {
+    color: red;
+  }
+  
+  .messages .success {
+    color: green;
+  }
+  
+  .attendance-data {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .attendance-data table {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 900px;
+    border-collapse: collapse;
+    text-align: center;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .attendance-data th, .attendance-data td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+  
+  .attendance-chart-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .attendance-chart-container canvas {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  #totalPercentage {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+  }
+  
